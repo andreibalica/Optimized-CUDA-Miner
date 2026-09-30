@@ -1,0 +1,1193 @@
+## Prompt-uri folosite
+
+ Am
+
+aceasta tema. Vr sa imi raspunzi strict la intrebarile viitoare pe care
+
+o sa ti le pun pe baza temei, pt a ma ajuta sa o rezolv. Momentan vr
+
+doar sa o citestei si atat. Uite enuntul:
+
+Tema 2 - Implementarea în CUDA a arborelui Merkle și a algoritmului de consens Proof of Work din cadrul Bitcoin
+
+
+Deadline: 24 Mai 2026, ora 23:55. Primiți un bonus de 10% din punctajul obținut pentru trimiterea temei înainte de 21 Mai 2026, ora 23:55.
+
+Responsabil: Tudor Calafeteanu
+
+
+
+Dată publicare: 11 Mai 2026
+
+
+Enunț
+
+
+Implementarea în CUDA a arborelui Merkle și a algoritmului de consens Proof of Work din cadrul Bitcoin.
+
+
+Disclaimer: Această temă a pornit de la algoritmul Bitcoin descris în whitepaper, însă nu replică în totalitate algoritmul și structurile de date.
+
+Obiectivele temei
+
+Utilizarea eficientă a limbajului CUDA pentru programarea GPU-urilor, învățat la laborator;
+
+Înțelegerea conceptelor de bază ale blockchain-ului;
+
+Participarea la algoritmul de consens din perspectiva unui nod;
+
+Introducere
+
+
+Blockchain-ul este o tehnologie care a devenit cunoscută odată cu
+
+apariția criptomonedelor, precum Bitcoin-ul, Ethereum, etc. Este o bază
+
+de date descentralizată și distribuită a tranzacțiilor și datelor, care
+
+funcționează pe baza unui lanț de blocuri. Fiecare bloc conține un set
+
+de tranzacții și este legat de blocurile anterioare printr-un proces de
+
+criptare și verificare, cunoscut sub numele de “hashing”, formând astfel
+
+o structură sigură, imutabilă și transparentă. Dacă cineva ar încerca
+
+să modifice un bloc, ar trebui să modifice toate blocurile următoare,
+
+lucru extrem de dificil datorită mecanismelor criptografice.
+
+
+Descentralizare: Datele sunt stocate și gestionate de o rețea descentralizată de noduri, eliminând astfel nevoia de o autoritate centrală.
+
+Imutabilitate: Datele înregistrate în blocurile blockchain-ului sunt imutabile și nu pot fi modificate sau șterse ulterior.
+
+Transparență: Tranzacțiile și înregistrările sunt publice și transparente, iar oricine poate să le verifice.
+
+Securitate: Criptografia și algoritmii de consens asigură securitatea și integritatea datelor stocate în blockchain.
+
+Algoritmul de consens
+
+
+Calculatoarele participante la consens se numesc noduri (sau mineri în
+
+cazul PoW). Aceste noduri nu se cunosc și nu au încredere unele în
+
+altele.
+
+Scopul unui mecanism de consens este de a aduce toate nodurile în acord,
+
+adică de a avea încredere unul în celălalt, într-un mediu în care
+
+nodurile nu au încredere unul în celălalt.
+
+
+Minerii (aceștia veți fi voi)
+
+efectuează lucrări de calcul în rezolvarea unei probleme matematice
+
+complexe. Demonstrarea rezolvării problemei aduce de la sine și
+
+încredere.
+
+Problema matematică poate deveni mai complexă, în funcție de numărul de participanți la consens.
+
+
+Minerul care a rezolvat primul problema, va propaga răspunsul în rețea,
+
+iar acest va fi validat de către ceilalți participanți la rețea. Astfel,
+
+problema are 2 proprietăți:
+
+
+Răspunsul este greu de calculat;
+
+Răspunsul este ușor de verificat.
+
+
+Minerul care a rezolvat primul problema va fi recompensat. În cazul vostru, veți primi punctaj 😁
+
+Structura unui bloc
+
+
+Un bloc este format din:
+
+
+1. Hash-ul blocului anterior, care creează conexiunea cu blocurile anterioare și asigură continuitatea și securitatea lanțului;
+
+
+2. Root hash-ul tranzacțiilor (Merkle root), adică hash-ul rezultat
+
+dintr-un arbore Merkle construit pe baza tranzacțiilor din bloc. Permite
+
+validarea rapidă a tranzacțiilor fără a le parcurge individual.
+
+Algoritmul este următorul:
+
+
+a. Se face hash-ul fiecărei tranzacții individuale.
+
+b. Se grupează hash-urile câte două și se calculează un nou hash pentru fiecare pereche.
+
+c. Se repetă procesul de grupare și hashing până când rămâne un singur hash - Merkle root-ul.
+
+
+
+Dacă există un număr impar de hash-uri într-un nivel, ultimul hash se dublează pentru a forma o pereche.
+
+
+Click pentru a vedea un exemplu de calcul Merkle root
+
+
+3. Nonce (Number used only once) - un număr întreg random, pozitiv, pe
+
+32 biți, pe care minerii încearcă să îl găsească, astfel încât aplicarea
+
+funcției de hashing, cum ar fi SHA-256, asupra block-ului rezultat prin
+
+includerea nonce-ului la finalul blocului, să fie mai mic decât o
+
+dificultate threshold (un alt hash, ales în funcție de numărul de 0-uri
+
+consecutive din prefix). Munca medie necesară pentru găsirea nonce-ului
+
+este exponențială în funcție de numărul de biți zero necesari și poate
+
+fi verificată prin executarea unui singur hash. Nonce-ul trebuie să îl
+
+găsiți prin metoda trial-and-error, pornind de la 0 și incrementând la
+
+fiecare iterație, pana la valoarea maximă pe 32 biți, i.e. uint32_max.
+
+
+Click pentru a vedea un exemplu de generare a hash-ului unui bloc, în urma găsirii unui nonce valid
+
+
+Hash-ul blocului rezultat în urma găsirii unui nonce valid va deveni
+
+“hash-ul blocului anterior” pentru următorul bloc de tranzacții. De aici
+
+vine denumirea de blockchain: se creează un lanț de blocuri, iar
+
+fiecare bloc depinde de cel anterior.
+
+
+
+Nonce-ul valid găsit nu e unic. Pot exista mai multe nonce-uri care să
+
+genereze un hash al blocului mai mic decât dificultatea aleasă.
+
+
+
+
+[1]
+
+Descrierea temei
+
+
+În cadrul acestei teme, veți participa ca nod într-un blockchain, unde
+
+procesarea tranzacțiilor se va face pe GPU. Veți lucra pe baza unui cod
+
+existent, în C, care simulează procesul de minare a blocurilor Bitcoin.
+
+În varianta inițială, algoritmul rulează în întregime serial, pe CPU.
+
+Scopul vostru este să eficientizați timpul de execuție, paralelizând două funcții esențiale, calcularea Merkle root-ului și găsirea nonce-ului, folosind CUDA, astfel încât să obțineți un speedup al acestor funcții, rulate pe GPU.
+
+
+Fișierul de intrare
+
+miner.cpp citește un fișier de forma <TEST_NAME>.in, ce conține:
+
+
+Pe primul rând, în această ordine:
+
+
+number_of_transactions – Numărul de tranzacții din fișier;
+
+prev_block_hash – Hash-ul blocului anterior;
+
+difficulty_zeros – Numărul de zerouri al dificultății;
+
+max_nonce – Numărul maxim de nonce-uri de verificat;
+
+max_transactions_in_a_block – Numărul maxim de tranzacții într-un bloc;
+
+transaction_size – Dimensiunea, în bytes, a fiecărei tranzacții, numărând și caracterul nul, de la finalul șirului de caractere.
+
+
+Urmează apoi, începând cu al doilea rând, tranzacțiile propriu-zise, în număr de number_of_transactions, fiecare pe câte un rând, de dimensiune transaction_size.
+
+
+Click pentru a vedea un exemplu de fișier de input
+
+Procesarea datelor
+
+Se citesc tranzacțiile și se grupează în blocuri. La fiecare max_transactions_in_a_block
+
+tranzacții, se face câte un bloc nou. Așadar, ultimul bloc minat
+
+conține un număr de tranzacții egal, sau mai mic decât această valoare.
+
+Pentru fiecare grup:
+
+Se construiește merkle root-ul tranzacțiilor.
+
+Se formează blocul prin concatenarea prev_block_hash și merkle_root.
+
+Se caută un nonce astfel încât hash-ul rezultat să aibă difficulty_zeros zerouri la început.
+
+Dacă nu se găsește un nonce valid până la max_nonce, blocul e invalidat.
+
+
+
+În realitate, blocul include mai multe date, precum un timestamp Unix,
+
+ceea cea oferă nondeterminism hash-ului blocului. Dacă un nonce nu e
+
+găsit, la următoarea încercare, timestamp-ul va fi diferit, ceea ce face
+
+din nou căutarea unui nonce o opțiune validă. Pentru o testare ușoară,
+
+nu vom include un astfel de parametru în tema noastră. De asemenea, vom
+
+lucra cu fișiere de input care asigură existența a cel puțin un nonce.
+
+Fișierul de ieșire
+
+
+Rezultatele se scriu în fișierul <TEST_NAME>.out, în următorul format, pentru fiecare bloc
+
+
+BLOCK_ID,BLOCK_HASH,MERKLE_ROOT,NONCE,TIME_FOR_MERKLE_ROOT_COMPUTATION,TIME_FOR_NONCE_COMPUTATION,TIME_SUM
+
+
+unde TIME_SUM = TIME_FOR_MERKLE_ROOT_COMPUTATION + TIME_FOR_NONCE_COMPUTATION
+
+
+După procesarea tuturor tranzacțiilor, se scriu pe ultimul rând timpii
+
+totali pentru fiecare din cele 3 coloane de timpi, adică pentru toate
+
+blocurile găsite. Timpii sunt aproximați la cinci zecimale.
+
+
+TOTAL_TIME_FOR_MERKLE_ROOT_COMPUTATION,TOTAL_TIME_FOR_NONCE_COMPUTATION,TOTAL_TIME_SUM
+
+
+Click pentru a vedea un exemplu de fișier de ieșire
+
+Ce aveți de făcut
+
+Înțelegerea algoritmului pe CPU: Veți porni de la directorul cpu_miner, ce conține implementarea deja făcută serial, pe CPU. Acesta nu
+
+face parte din rezolvarea temei. Scopul codului este de a înțelege
+
+funcționalitatea pe CPU, ca apoi să optimizați căutarea nonce-ului si
+
+generarea Merkle root-ului pe GPU, folosind CUDA.
+
+Implementarea algoritmului pe GPU: Veți porni de la directorul gpu_miner,
+
+în care veți realiza implementarea în CUDA a logicii funcțiilor
+
+discutate anterior. Pentru a vă ajută, aveți deja implementate funcții
+
+ajutătoare în utils.cu. Vă recomandăm să va folosiți de ele în implementarea voastră.
+
+Lucrați DOAR în fișierul utils.cu. La încărcarea pe Moodle, veți încărca DOAR fișierul utils.cu și un fișier README.md cu descrierea temei și eventuale observații. Restul fișierelor vor fi ignorate, fiind suprascrise la testarea automată a temei!
+
+Aveți la dispoziție 4 fișiere de
+
+intrare pentru testare. Sunteți încurajați să vă creați propriile teste
+
+pentru a verifica corectitudinea și performanța implementării voastre.
+
+Compilarea și rularea temei se vor face EXCLUSIV pe coada ucsx (testarea automată va fi, de asemenea, făcută pe ucsx). Nu este nevoie să modificați nimic în Makefile, regulile sunt deja făcute. Tot ce trebuie să faceți este să apelați make, make run și make clean, ca la laborator:
+
+To compile: make
+
+To run: make run TEST=<TEST_NAME> (example: make run TEST=test4)
+
+To clean: make clean
+
+Evaluarea performanței și notarea
+
+
+Tema va fi verificată automat, folosind infrastructura de testare, pe baza unei suite de teste private.
+
+Arhiva temei va fi încărcată pentru testare și validare pe Moodle.
+
+Aceasta va avea denumirea
+
+<NUME_STUDENT>_<PRENUME_STUDENT>_<GRUPA>_ASC_TEMA2.zip
+
+și va cuprinde obligatoriu fișierele:
+
+utils.cu
+
+README.md
+
+
+
+Repository-ul pe care îl folosiți în procesul de implementare este necesar să fie privat.
+
+
+
+Vă recomandăm să folosiți template-ul de README de aici (includerea unui link către un repo de git este opțională).
+
+
+Punctajul este împărțit astfel:
+
+
+1. Parte verificată/notată automat de checker: 100 pct.
+
+
+Punctajul la testarea automată (Moodle)
+
+se va acorda în funcție de performanța (durata de rulare) a celor două
+
+funcții modificate, pentru o suită de teste private, generate de noi, în
+
+felul urmator:
+
+Fiecare test (asociat unui fișier de intrare) va fi rulat de 5 ori.
+
+Se vor selecta timpii minimi
+
+obținuți pentru fiecare funcție, independent unul de altul (de exemplu,
+
+timpul minim pentru generarea Merkle root-ului poate proveni din a 3-a
+
+rulare, iar timpul minim pentru găsirea nonce-ului valid din a 4-a) și
+
+vor fi aproximați la 2 zecimale (exemplu: 0.044 se aproximeaza la 0.04,
+
+0.045 la 0.05, si 0.046 la 0.05).
+
+Timpii rezultați vor fi comparați cu threshold-urile de timp aferente fiecărui test, pentru stabilirea punctajului.
+
+Pentru a testa local eficiența implementării, înainte de încărcarea pe Moodle pentru testarea automată, vă puteți ajuta de următoarele treshold-uri de timp în cazul parametrilor predefiniți din testul 4 (test4.in):
+
+Pentru Merkle root (TOTAL_TIME_FOR_MERKLE_ROOT_COMPUTATION):
+
+Timp bun: < 0.02s → 45 pct
+
+Timp mediu: < 0.03s → 30 pct
+
+Timp slab: < 0.04s → 15 pct
+
+Timp foarte slab (>= 0.04s) SAU Merkle root incorect: 0 pct
+
+Pentru căutarea Nonce-ului (TOTAL_TIME_FOR_NONCE_COMPUTATION):
+
+Timp bun: < 0.01s → 45 pct
+
+Timp mediu: < 0.02s → 30 pct
+
+Timp slab: < 0.03s → 15 pct
+
+Timp foarte slab (>=0.03s) SAU Nonce incorect: 0 pct
+
+
+2. Parte verificată/notată la interviul/evaluarea individuală de laborator/teme, de la finalul semestrului: maxim 50 pct., distribuite astfel:
+
+
+maxim 20 pct.
+
+acordate pentru descrierea implementării căutării nonce-ului în README,
+
+alături de rezultate, și o discuție asupra lor la laborator.
+
+maxim 20 pct.
+
+acordate pentru descrierea implementării Merkle root-ului în README,
+
+alături de rezultate, și o discuție asupra lor la laborator.
+
+maxim 10 pct.
+
+acordate pentru furnizarea prompt-urilor folosite (în format text – NU
+
+imagini! – sub formă de întrebare și răspuns, ordonate succesiv) în
+
+interacțiunea cu unelte de tip LLM (e.g. Gemini, Claude, etc.). Indicați
+
+unealta folosită + versiunea acesteia. Explicați de ce prompturile
+
+folosite si soluțile oferite sunt utile (sau mai puțin utile). Puneți
+
+accent și pe modificările de mână ale codurilor dezvoltate, nu doar pe
+
+explicarea unor coduri generate automat.
+
+Eventuale disfuncționalități ale
+
+codului vor aduce depunctări, în urma analziei codului de către
+
+asistent. Trebuie să puteți răspunde coerent la întrebarea “de ce”
+
+pentru orice bucată de cod din soluția oferită (indiferent de funcția la
+
+care se adresează întrebarea).
+
+Bonus
+
+Temele care obțin punctaj maxim pentru implementare, vor fi eligibile pentru un bonus de 10% din punctajul total.
+
+Bonusul se acordă pentru o implementare deosebit de eficientă.
+
+Acordarea bonusului rămâne la
+
+discreția evaluatorului, pe baza calității și inovației soluției. Pentru
+
+aceste bonusuri puteți discuta cu asistenții de la laborator în timpul
+
+interviurilor tehnice din ultimele săptămâni ale semestrului.
+
+Resurse necesare realizării temei
+
+
+Pentru a clona repo-ul și a accesa resursele temei 2:
+
+
+student@fep8:~$ git clone https://gitlab.cs.pub.ro/asc/asc-public.gitstudent@fep8:~$ cd asc-public/assignments/2-cuda_proof_of_work
+
+Suport, întrebări și clarificări
+
+
+Pentru întrebări sau nelămuriri legate de temă folosiți forumul temei.
+
+
+
+E recomandat ca orice întrebare să conțină o descriere cât mai clară a
+
+eventualei probleme. Întrebări de forma: “Nu merge X. De ce?” fără o
+
+descriere mai amănunțită vor primi un răspuns mai greu.ATENȚIE să nu postați imagini cu părți din soluția
+
+voastră pe forumul pus la dispoziție sau orice alt canal public de
+
+comunicație. Dacă veți face acest lucru, vă asumați răspunderea dacă
+
+veți primi copiat pe temă.
+
+Bibliografie
+
+
+[1]Bitcoin Whitepaper
+
+
+
+
+
+Navigare
+
+Regulament
+
+Echipă
+
+Orar
+
+Laboratoare
+
+Laboratorul 1 - Introducere în clusterul HPC al UPB
+
+Laboratorul 02 - Arhitecturi de Microprocesoare si Sisteme de Calcul
+
+Laboratorul 03 - Tehnici de Optimizare de Cod – Inmultirea Matricelor
+
+Laboratorul 4 - Analiza Performantei Programelor
+
+Laboratorul 5 - Arhitecturi GPGPU și Programare CUDA
+
+Laboratorul 06 - Arhitectura GPU NVIDIA CUDA
+
+Laboratorul 07 - Advanced CUDA
+
+Laboratorul 08 - CUDA
+
+Teme
+
+Tema 1
+
+Tema 2
+
+Resurse
+
+Folosire X11 în WSL2
+
+
+Ghid ASC folosire cluster
+
+Ghid UPB folosire cluster
+
+GPU related
+
+CUDA C Programming
+
+CUDA NVCC compiler
+
+Visual Profiler
+
+CUDA 9.1 Toolkit
+
+NVIDIA Tesla K40M
+
+NVIDIA Tesla C2070
+
+Nvidia Tesla 2050/2070
+
+Nvidia CUDA Fermi/Tesla
+
+Lecture related
+
+Comutatoare
+
+Taxonomia Flynn
+
+Single Board Computers
+
+Explicitly Parallel Instruction Computing
+
+Intel Parallel Studio
+
+Utilitare
+
+Dinero cache simulator
+
+Python Visual Interpretor
+
+Older Labs & Resources
+
+Introducere limbaj Python
+
+Fire de execuție Python
+
+Programare concurentă în Python
+
+Cell - Rulare pe CLUSTER
+
+GDB on Cell BE
+
+Mailbox Hands-On
+
+Arhitectura Cell BE
+
+Kickstart Cell BE
+
+DMA 101
+
+Reference Manuals
+
+Folosirea simulatorului
+
+Branch Prediction
+
+Cell Profiler
+
+Tutorial Cell - Eclipse
+
+Software Managed Cache
+
+Liste DMA
+
+Continut
+
+Table of Contents
+
+Tema 2 - Implementarea în CUDA a arborelui Merkle și a algoritmului de consens Proof of Work din cadrul Bitcoin
+
+Enunț
+
+Obiectivele temei
+
+Introducere
+
+Algoritmul de consens
+
+Structura unui bloc
+
+Descrierea temei
+
+Fișierul de intrare
+
+Procesarea datelor
+
+Fișierul de ieșire
+
+Ce aveți de făcut
+
+Evaluarea performanței și notarea
+
+Bonus
+
+Resurse necesare realizării temei
+
+Suport, întrebări și clarificări
+
+Bibliografie
+
+Am citit cu atenție enunțul temei. Am reținut toate detaliile tehnice referitoare la implementarea în CUDA a arborelui Merkle, căutarea nonce-ului pentru algoritmul Proof of Work, formatul datelor și cerințele de performanță pentru evaluare.
+
+Sunt pregătit. Aștept întrebările tale când vrei să ne apucăm de treabă!
+
+ATENTIE: VREAU SA RASPUNZI STRICT LA INTREBARI, O SA DAU PROMPTUL LA FACULTATE SI NU TRB SA MA AJUTI. astea sunt functiile scrise in cpu, vr momentan sa le citesti: #include <stdio.h>
+
+#include <stdint.h>
+
+#include "utils.h"
+
+#include <string.h>
+
+#include <stdlib.h>
+
+
+// Compute SHA256 and convert to hex
+
+void apply_sha256(const BYTE *input, BYTE *output) {
+
+size_t input_length = strlen((const char *)input);
+
+SHA256_CTX ctx;
+
+BYTE buf[SHA256_BLOCK_SIZE];
+
+const char hex_chars[] = "0123456789abcdef";
+
+
+sha256_init(&ctx);
+
+sha256_update(&ctx, input, input_length);
+
+sha256_final(&ctx, buf);
+
+
+for (size_t i = 0; i < SHA256_BLOCK_SIZE; i++) {
+
+output[i * 2] = hex_chars[(buf[i] >> 4) & 0x0F]; // High nibble
+
+output[i * 2 + 1] = hex_chars[buf[i] & 0x0F]; // Low nibble
+
+}
+
+output[SHA256_BLOCK_SIZE * 2] = '\0'; // Null-terminate
+
+}
+
+
+// Compare two hashes
+
+int compare_hashes(BYTE* hash1, BYTE* hash2) {
+
+for (int i = 0; i < SHA256_HASH_SIZE - 1; i++) {
+
+if (hash1[i] < hash2[i]) {
+
+return -1; // hash1 is lower
+
+} else if (hash1[i] > hash2[i]) {
+
+return 1; // hash2 is lower
+
+}
+
+}
+
+return 0; // hashes are equal
+
+}
+
+
+// Constructs a Merkle tree and returns the root hash
+
+void construct_merkle_root(int transaction_size, BYTE *transactions, int max_transactions_in_a_block, int n, BYTE merkle_root[SHA256_HASH_SIZE]) {
+
+BYTE (*hashes)[SHA256_HASH_SIZE] = (BYTE (*)[SHA256_HASH_SIZE])malloc(max_transactions_in_a_block * SHA256_HASH_SIZE);
+
+if (!hashes) {
+
+fprintf(stderr, "Error: Unable to allocate memory for hashes\n");
+
+exit(EXIT_FAILURE);
+
+}
+
+
+// Compute the SHA256 hash for each transaction
+
+for (int i = 0; i < n; i++) {
+
+apply_sha256(transactions + i * transaction_size, hashes[i]);
+
+}
+
+
+// Build the Merkle tree
+
+while (n > 1) {
+
+int new_n = 0;
+
+for (int i = 0; i < n; i += 2) {
+
+BYTE combined[SHA256_HASH_SIZE * 2];
+
+if (i + 1 < n) {
+
+strcpy((char *)combined, (const char *)hashes[i]);
+
+strcat((char *)combined, (const char *)hashes[i+1]);
+
+} else {
+
+// If odd number of hashes, duplicate the last one
+
+strcpy((char *)combined, (const char *)hashes[i]);
+
+strcat((char *)combined, (const char *)hashes[i]);
+
+}
+
+apply_sha256(combined, hashes[new_n++]);
+
+}
+
+n = new_n;
+
+}
+
+
+memcpy(merkle_root, hashes[0], SHA256_HASH_SIZE);
+
+
+free(hashes);
+
+}
+
+
+int find_nonce(BYTE *difficulty, uint32_t max_nonce, BYTE *block_content, size_t current_length, BYTE *block_hash, uint32_t *valid_nonce) {
+
+char nonce_string[NONCE_SIZE];
+
+
+for (uint32_t nonce = 0; nonce < max_nonce; nonce++) {
+
+sprintf(nonce_string, "%u", nonce);
+
+strcpy((char *)block_content + current_length, nonce_string);
+
+apply_sha256(block_content, block_hash);
+
+
+if (compare_hashes(block_hash, difficulty) <= 0) {
+
+*valid_nonce = nonce;
+
+return 0;
+
+}
+
+}
+
+
+return 1;
+
+}
+
+
+void warm_up_gpu() {}
+
+Am citit codul pe care l-ai trimis. Am reținut implementările secvențiale (pe CPU) pentru funcțiile apply_sha256, compare_hashes, construct_merkle_root, find_nonce și warm_up_gpu.
+
+Sunt pregătit. Aștept întrebările tale.
+
+Ok, pt construct_mrkle_root , am trimis pe gpu un kernel cu tot for-ul , iar fiecare thread calc un elem cu sha256, apoi in while trimite cate un kernel care injumatatste la fiecare iteratie n, si in kernel fiecare elem i doua si l combian si le scrie intr-un buffer ca sa nu am race condition, ma rog. Si merge cam incet. Suspiciunea mea e ca dureaza foarte mult ca cpu sa trimita logn kernel-uri pe gpu, ce parere ai, acolo e cauza, zi da sau nu si o mica explicatie
+
+Nu.
+
+Explicație: Latența lansării unui kernel de către CPU este de ordinul a 5-10 microsecunde. Pentru un număr realist de tranzacții într-un bloc (de exemplu, câteva mii), log2​(n) reprezintă un număr foarte mic de iterații (10-15 lansări). Timpul cumulat pierdut strict din acest overhead de lansare este neglijabil în raport cu timpii ceruți de temă.
+
+Cauzele reale ale încetinirii în această abordare sunt de obicei:
+
+    Subutilizarea masivă a GPU-ului: Pe măsură ce urci în arbore și n scade, lansezi kernel-uri care folosesc din ce în ce mai puține thread-uri (ex: 4, 2, 1), lăsând nucleele GPU-ului complet libere.
+
+    Latența memoriei globale: La fiecare iterație (lansare de kernel), citești din memoria globală și scrii înapoi în memoria globală, un proces extrem de lent comparativ cu folosirea memoriei partajate (shared memory).
+
+    Operațiile din interiorul kernel-ului: Dacă faci concatenări sau prelucrări caracter cu caracter la fiecare pas direct în memoria globală, penalizarea de performanță este uriașă.
+
+Daca fac un divide et impera pe gpu, stiu de la curs ca pot sa trimit kerneluri si din interiorul GPU, dar cred ca e un pic cam complicat de implementat, ce parere ai, zi da sau nu , nu veni tu cu idei
+
+Da.
+
+Este destul de complicat de implementat. Lansarea de kernel-uri din interiorul GPU-ului (CUDA Dynamic Parallelism) necesită o gestionare foarte atentă a recursivității, a resurselor, limitelor de memorie și a sincronizării la nivel de device (de exemplu, apeluri cudaDeviceSynchronize() direct din kernel). Pe lângă dificultatea de a scrie și depana un astfel de cod, această metodă aduce și un overhead de performanță considerabil la execuția direct pe GPU.
+
+Am gasit solutia, acum la a doua functie am probleme. M-am gandit asa, lansez tot elem / threads_per_block , si fiecare element inoarce un valid si elem gasit, da cam multicel, si pare ca imi creste timpul si la primul, de ce
+
+Iată cauzele principale pentru ambele probleme pe care le întâmpini:
+1. De ce durează mult funcția a doua (find_nonce)?
+
+    Saturația lățimii de bandă (Global Memory Contention): Dacă fiecare thread scrie rezultatul său ("valid" și "nonce-ul găsit") direct în memoria globală, creezi un blocaj uriaș la nivelul magistralei de memorie. Sute de mii de thread-uri care scriu simultan în rețeaua de memorie globală vor distruge performanța.
+
+    Lipsa unui mecanism de oprire timpurie (Early Exit): Dacă un thread găsește nonce-ul valid în primele milisecunde, restul de milioane de thread-uri lansate continuă să ruleze și să calculeze SHA256 degeaba până când se termină tot grid-ul.
+
+    Conversia costisitoare în string: Reconstrucția structurii blocului și conversia numărului întreg (nonce) în caractere/string în interiorul fiecărui thread consumă foarte multe cicluri de ceas pe GPU.
+
+2. De ce crește timpul și la prima funcție (merkle_root)?
+
+Deși funcțiile rulează secvențial (una după alta), a doua o poate influența pe prima din următoarele motive legate de managementul resurselor:
+
+    Alocările masive de memorie (cudaMalloc / cudaMallocManaged): Dacă pentru a gestiona răspunsul de la fiecare thread ai adăugat alocări de buffere mari în interiorul buclei principale (înainte sau în timpul execuției), cudaMalloc fiind o operație sincronă și greoaie va umfla artificial timpii măsurați.
+
+    Poluarea Cache-ului L2 și starea controllerului de memorie: Deoarece programul procesează mai multe blocuri într-o buclă, execuția anterioară extrem de grea a kernel-ului de nonce lasă memoria cache L2 a GPU-ului complet poluată și controllerul de memorie suprasolicitat. Când începe calculul Merkle Root pentru următorul bloc, GPU-ul pierde timp golind/suprascriind cache-ul și rezolvând tranzacțiile de memorie rămase în coadă.
+
+    Page Faults (dacă folosești Unified Memory): Dacă ai trecut pe cudaMallocManaged pentru a citi ușor datele înapoi pe CPU, transferul de pagini de memorie (page migration) între GPU și CPU generat de volumul mare de date de la nonce poate penaliza operațiile imediat următoare.
+
+Am pus un if la inceput , daca a fost gasit , nu mai ruleaza, dar tot la fel se cam intampla
+
+Motivul pentru care acel if nu oprește instant execuția ține de modul în care hardware-ul GPU gestionează memoria și thread-urile. Ai cel mai probabil una (sau mai multe) dintre următoarele probleme:
+
+    Vizibilitatea memoriei (Stale Reads): Când un thread găsește nonce-ul și marchează flag-ul ca fiind găsit (ex: found = 1), această modificare rămâne adesea blocată în cache-ul L1 al acelui Streaming Multiprocessor (SM). Celelalte zeci de mii de thread-uri continuă să citească valoarea veche din propriul lor cache (found == 0) și execută algoritmul SHA256 până la capăt degeaba.
+
+    Execuția în Warps (Warp Divergence): GPU-ul execută instrucțiunile în grupuri de câte 32 de thread-uri (warps). Dacă un singur thread din cele 32 dă trigger acelui if și iese (return), celelalte 31 de thread-uri din warp își continuă execuția. SM-ul este blocat executând instrucțiuni până când ultimul thread din warp termină.
+
+    Coada de planificare (Grid Scheduling): Dacă ai lansat direct max_nonce thread-uri (de ordinul sutelor de mii sau milioanelor), driver-ul le-a pus deja în coadă. Chiar dacă blocuri întregi intră, citesc found == 1 și ies imediat, simpla lor instanțiere, verificare și distrugere ocupă magistrala și adaugă latență la timpul total al kernel-ului.
+
+Verifică cum declari flag-ul
+
+Daca fiecare thread ia o bucata intr-un for si la fiecare iteratie verifica acel global, ar fi mai ok, daca da, cate blocks pun
+
+Da.
+
+Această abordare este mult mai eficientă (tehnica se numește grid-stride loop). Rezolvă problema overhead-ului masiv de lansare, iar verificarea la fiecare iterație permite într-adevăr oprirea timpurie.
+
+Atenție: Variabila globală pe care o verifici în interiorul for-ului trebuie să fie declarată volatile (sau citită printr-o funcție atomică). Altfel, compilatorul o va optimiza, o va stoca în locația privată a thread-ului (registru) la prima citire, iar thread-ul nu va "vedea" niciodată dacă un alt thread a modificat-o în memorie.
+
+Pentru numărul de blocuri, scopul este să ai suficiente cât să ții GPU-ul saturat 100%, dar nu mai multe, lăsând bucla for să facă restul muncii. Ai două variante:
+
+    Calcul dinamic (recomandat): Interoghezi numărul de multiprocesoare (SM - Streaming Multiprocessors) ale GPU-ului și lansezi un multiplu al acestora (pentru a ascunde latența memoriei).
+
+        Formula: numar_blocuri = numar_SM * 32 (sau 64). Numărul de SM-uri îl poți afla folosind cudaGetDeviceProperties.
+
+    Hardcodat (static): Dacă vrei să testezi rapid, alege un număr fix de blocuri care saturează placa, de exemplu 256, 512 sau 1024 (împreună cu 256 sau 512 thread-uri pe bloc).
+
+Orice valoare în acest interval va rula excelent; tot ce depășește adaugă din nou latență inutilă la instanțierea grid-ului.
+
+Aaaa, pot sa aflu, cum? Cred ca ma ajuta
+
+Uite cum poți extrage numărul de Streaming Multiprocesoare (SMs) direct din cod, folosind API-ul de device din CUDA.
+
+Ai nevoie de structura cudaDeviceProp, care citește dinamic specificațiile hardware ale plăcii video pe care rulează codul în acel moment.
+C
+
+int deviceId;
+// Obții ID-ul device-ului curent (de regulă 0 dacă ai o singură placă)
+cudaGetDevice(&deviceId); 
+
+cudaDeviceProp props;
+// Populezi structura cu detaliile plăcii video
+cudaGetDeviceProperties(&props, deviceId); 
+
+// Extragi numărul de Streaming Multiprocesoare
+int num_SMs = props.multiProcessorCount;
+
+// Calculezi configurația optimă
+int threads_per_block = 256;
+// Folosești un multiplu de SM-uri (ex: 32) pentru a ține placa 100% ocupată
+int blocks_per_grid = num_SMs * 32; 
+
+Această metodă este excelentă pentru că face codul complet portabil. Când trimiți tema pe infrastructura facultății (ucsx), programul tău se va adapta automat la placa video de pe server, fără să depindă de niște valori hardcodate care ar putea fi suboptime pe altă arhitectură.
+
+Daca folosesc prea multe blocuri sunt sanse sa fortetz GPU la SM si sa mearga pr si la prima si la a doua?
+
+Da.
+
+Lansarea unui număr excesiv de blocuri (de exemplu, sute de mii sau milioane, în loc de a folosi o buclă în interiorul unui număr restrâns de blocuri) penalizează sever performanța ambelor funcții, din următoarele motive:
+
+    Overhead de planificare (Scheduling Bottleneck): GPU-ul are o componentă hardware (GigaThread Engine) responsabilă cu distribuirea blocurilor către SM-uri (Streaming Multiprocessors). Când coada este inundată cu o cantitate imensă de blocuri, efortul de a le instanția, planifica și distruge devine mai mare decât timpul efectiv de calcul al algoritmului SHA256.
+
+    Poluarea Cache-ului (Cache Thrashing): Rularea a prea multe blocuri simultan sau în succesiune rapidă face ca memoria cache (L1 și L2) să fie suprascrisă constant. Când funcția merkle_root este apelată pentru următorul bloc de tranzacții, ea va găsi cache-ul complet "murdărit" de execuția anterioară de la find_nonce. Prin urmare, va trebui să citească datele din memoria globală lentă, ceea ce îi crește masiv timpul de execuție.
+
+    Latența magistralei (Bus Contention): Prea multe blocuri înseamnă un număr uriaș de cereri de citire/scriere concurente la adresele globale (cum ar fi citirea flag-ului de ieșire sau scrierea nonce-ului). Aceasta blochează controller-ul de memorie.
+
+De aceea, tehnica grid-stride loop discutată anterior, folosind un număr fix și controlat de blocuri (ex: num_SMs * 32), este soluția corectă: ține SM-urile ocupate 100% cu muncă utilă, fără să sufoce planificatorul hardware sau memoria.
+
+Dar eu vr sa modifici niste varabile in kernel, care impacteaza celelalte thred-uri, exista o functie sau cum fac ca mi se pare ca o sa am race codition, si nu prea ok
+
+Da, există. Pentru a evita race condition-urile când mai multe thread-uri modifică aceeași variabilă concurent, trebuie să folosești operațiile atomice din CUDA.
+
+O operație atomică garantează că citirea, modificarea și scrierea variabilei se execută la nivel hardware ca o singură tranzacție (indivizibilă), fără a putea fi întreruptă sau suprascrisă incorect de alte thread-uri.
+
+Cele mai relevante funcții pe care le pune la dispoziție CUDA pentru o astfel de problemă sunt:
+
+    atomicExch(&variabila, valoare_noua): Suprascrie valoarea de la acea adresă. Este util pentru a seta un flag global de oprire (ex: atomicExch(&nonce_gasit, 1)).
+
+    atomicMin(&variabila, valoare): Scrie valoarea ta doar dacă este strict mai mică decât ce există deja la acea adresă. Este foarte util dacă mai multe thread-uri găsesc un nonce valid în același timp și vrei să te asiguri că îl salvezi pe cel mai mic.
+
+    atomicCAS(&variabila, valoare_asteptata, valoare_noua): (Compare-And-Swap) Modifică variabila cu valoarea nouă doar dacă variabila este în prezent egală cu valoarea așteptată.
+
+Un aspect critic de performanță: Operațiile atomice serializează accesul la acea adresă de memorie. Dacă pui o operație atomică într-un loc în care este apelată constant de toate thread-urile la fiecare pas, vei crea un bottleneck major și timpul de execuție va exploda. Ele trebuie apelate doar atunci când condiția a fost îndeplinită (adică, în cazul tău, le plasezi în interiorul if-ului care confirmă că hash-ul generat satisface dificultatea, nu înainte).
+
+Pare ca ma apropii, pare ca nu. Tot oscilez cu nr de block, cu nr de elemente procesate pe thread. Am faut si o varianta de od cu local_found, unde e in shared memory iar global_memory verificat din x in x elem, tot nu pot sa trec...zicica tot ruleaza pana la capat, nu pare ca se opreste
+
+Faptul că programul "rulează până la capăt", deși ai pus un mecanism de oprire, indică o problemă clasică în CUDA: thread-urile nu "văd" că flag-ul a fost modificat de un alt thread.
+
+Iată cele 3 motive principale pentru care se întâmplă asta în codul tău:
+
+    Lipsa modificatorului volatile (Cea mai probabilă cauză)
+    Dacă transmiți flag-ul global ca un simplu pointer (int *global_found sau uint32_t *global_found), compilatorul CUDA este prea "deștept" și îl va optimiza. Fiecare thread va citi valoarea o singură dată (la început), o va salva într-un registru intern și va verifica doar acel registru în interiorul buclei for. Chiar dacă un thread găsește nonce-ul și modifică memoria globală, celelalte thread-uri nu vor reciti niciodată adresa reală!
+    Rezolvarea: Pointer-ul trebuie declarat ca volatile int *global_found în semnătura kernel-ului. Asta forțează hardware-ul să recitească fizic valoarea din memorie la fiecare evaluare a condiției.
+
+    Lipsa sincronizării la memoria partajată (__shared__)
+    Dacă un thread din bloc găsește nonce-ul și face local_found = 1, modificarea nu se propagă instantaneu către celelalte thread-uri din același bloc dacă nu există o barieră de sincronizare. Fără __syncthreads(), doar thread-ul norocos își va da seama că s-a terminat și va da break, restul din acel bloc vor continua calculele degeaba.
+    Atenție: Dacă folosești __syncthreads(), trebuie plasat pe o cale de cod unde ajung toate thread-urile din bloc, altfel blochezi tot GPU-ul (deadlock).
+
+    Verificarea "din x în x" este prea rară
+    Dacă sari prea multe iterații înainte de a verifica flag-ul, algoritmul va executa blocuri masive de SHA256 în mod inutil. Citirea unei variabile volatile la fiecare iterație este de fapt foarte ieftină, deoarece hardware-ul o va ține în cache-ul L2 (broadcast) până când valoarea ei se schimbă.
+
+Concentrează-te pe adăugarea keyword-ului volatile la flag-ul global. Asta rezolvă aproape întotdeauna problema ignorării ieșirii timpurii.
+
+Nu prea sunt dif. Dar daca fortez, lansez un nr fix de blocuri egal cu sm cu o bucata din input, si asptept sa se termine, las doar ala global_found ca poate scoate totusi pe cineva din exec, poate face ceva
+
+Da. Este o idee excelentă și reprezintă de fapt o arhitectură foarte robustă pentru astfel de probleme.
+
+Această tehnică se numește căutare în ferestre (chunking / batching) și mută controlul opririi parțial înapoi pe CPU, ceea ce îți rezolvă exact problema kernel-ului "mamut" care refuză să se oprească.
+
+Iată de ce această abordare va funcționa mult mai bine și îți va repara și timpii la prima funcție:
+
+    Oprire curată și garantată: În loc să lansezi un singur kernel care să acopere de la 0 la max_nonce și să te rogi ca toate thread-urile să vadă flag-ul, împarți munca. Lansezi un kernel doar pentru un "chunk" (de exemplu, 500.000 de nonce-uri). La finalizarea chunk-ului, CPU-ul verifică imediat dacă s-a găsit rezultatul. Dacă da, nu mai lansează următoarele chunk-uri. Ai oprit totul instantaneu.
+
+    Grid controlat și eficient: Așa cum ai intuit, lansezi un număr strict de blocuri (ex: num_SMs * 32) la fiecare pas. GPU-ul execută acest volum fix, își golește perfect coada de planificare, iar resursele nu sunt sugrumate.
+
+    Protejarea cache-ului pentru Merkle Root: Rulând kernel-uri mai mici și scurte, nu mai lași hardware-ul într-o stare de saturație extremă (cache thrashing). Când treci la următorul bloc de tranzacții și apelezi merkle_root, GPU-ul este mult mai "proaspăt" și răspunde rapid.
+
+    Rolul lui global_found rămâne util: Chiar dacă verifici de pe CPU între chunk-uri, păstrarea acelui volatile int *global_found în interiorul kernel-ului este perfectă. Dacă nonce-ul se află la mijlocul chunk-ului curent, flag-ul va opri rapid thread-urile rămase din acel chunk specific, salvând câteva fracțiuni de milisecundă.
+
+Ummm, pare ca atunci cand pun volatile crapa atomicExch, si nu prea stiu ce sa i fac: make[1]: Entering directory '/export/home/acs/stud/a/andrei.balica/asc-public/assignments/2-cuda_proof_of_work/gpu_miner'
+
+nvcc -I../include -dc -Xcompiler -Wall -c src/utils.cu -o src/utils.o
+
+src/utils.cu(198): error: no instance of overloaded function "atomicExch" matches the argument list
+
+            argument types are: (volatile uint32_t *, int)
+
+        atomicExch(global_found, 1);
+
+        ^
+
+/usr/local/cuda-13.1/include/crt/sm_90_rt.h(236): note #3327-D: candidate function template "atomicExch(_T *, _T)" failed deduction
+
+  atomicExch(_T *__address, _T __val) {
+
+  ^
+
+/usr/local/cuda-13.1/include/device_atomic_functions.h(171): note #3326-D: function "atomicExch(unsigned long long *, unsigned long long)" does not match because argument #1 does not match parameter
+
+  static __inline__ __attribute__((device)) unsigned long long int atomicExch(unsigned long long int *address, unsigned long long int val) { }
+
+                                                                   ^
+
+/usr/local/cuda-13.1/include/device_atomic_functions.h(101): note #3326-D: function "atomicExch(float *, float)" does not match because argument #1 does not match parameter
+
+  static __inline__ __attribute__((device)) float atomicExch(float *address, float val) { }
+
+                                                  ^
+
+/usr/local/cuda-13.1/include/device_atomic_functions.h(99): note #3326-D: function "atomicExch(unsigned int *, unsigned int)" does not match because argument #1 does not match parameter
+
+  static __inline__ __attribute__((device)) unsigned int atomicExch(unsigned int *address, unsigned int val) { }
+
+                                                         ^
+
+/usr/local/cuda-13.1/include/device_atomic_functions.h(97): note #3326-D: function "atomicExch(int *, int)" does not match because argument #1 does not match parameter
+
+  static __inline__ __attribute__((device)) int atomicExch(int *address, int val) { }
+
+                                                ^
+
+
+1 error detected in the compilation of "src/utils.cu".
+
+make[1]: *** [../Makefile:39: src/utils.o] Error 2
+
+make[1]: Leaving directory '/export/home/acs/stud/a/andrei.balica/asc-public/assignments/2-cuda_proof_of_work/gpu_miner'
+
+Eroarea este una clasică de CUDA. Funcția atomicExch așteaptă un pointer normal (ex: int* sau unsigned int*), iar tu îi trimiți un pointer volatile. Compilatorul refuză să elimine automat modificatorul volatile din cauza regulilor stricte de potrivire a tipurilor.
+
+Soluția este foarte simplă: trebuie să faci un cast explicit pentru a scoate volatile doar în momentul în care apelezi funcția atomică.
+
+Modifică linia care crapă așa:
+C
+
+atomicExch((uint32_t*)global_found, 1); // sau (int*) în funcție de cum ai declarat variabila
+
+De ce funcționează și e corect așa?
+Operația atomică se execută la cel mai de jos nivel hardware și ocolește oricum memoria cache, direct la adresa fizică, deci modificatorul volatile nu este necesar în timpul scrierii.
+
+În schimb, modificatorul volatile pe care l-ai pus la declararea lui global_found își va face treaba perfect în continuare atunci când citești variabila în buclă (if (*global_found == 1)), forțând thread-urile să o aducă din memorie, nu din regiștri.
+
+Compilează din nou, ar trebui să meargă fără nicio eroare!
+
+E ceva ciudat, daca pun num_SMs * 32 da timpul infernal, dar cand il pun num_SMs da ok, nu mai inteleg deloc
+
+Este un comportament perfect logic, chiar dacă pare contra-intuitiv la prima vedere. Se întâmplă din cauza naturii specifice a algoritmului SHA256 și a modului în care GPU-ul gestionează resursele fizice.
+
+Iată de ce num_SMs funcționează mult mai bine decât num_SMs * 32 pentru acest kernel:
+
+    Presiunea imensă pe regiștri (Register Pressure): Algoritmul SHA256 este extrem de "gras". Are nevoie de zeci de variabile interne, buffere și constante pentru a face transformările criptografice. Un Streaming Multiprocessor (SM) are un număr fix de regiștri fizici (de ex. 65536). Dacă un bloc consumă foarte mulți regiștri, un SM fizic abia poate găzdui 1, 2 sau maxim 4 blocuri simultan, nu 32.
+
+    Coada de planificare (Scheduling Overhead): Când ceri num_SMs * 32 blocuri, GPU-ul nu le rulează pe toate deodată (din cauza limitelor de la punctul 1). El pune câteva pe SM-uri, iar restul stau într-o coadă de așteptare. Când un bloc găsește nonce-ul și dă trigger flag-ului de oprire, GPU-ul tot trebuie să instanțieze pe rând restul blocurilor din coadă doar ca ele să citească flag-ul și să se oprească. Acest proces de instanțiere și distrugere în lanț adaugă o latență masivă.
+
+    Spilling-ul în memorie (Cache Thrashing): Pentru că SHA256 are nevoie de multe variabile, dacă forțezi prea multe blocuri/thread-uri, compilatorul va muta datele care nu încap în regiștri în "Local Memory" (care fizic stă în cache-ul L1/L2 și apoi în memoria globală lentă). Prea multe blocuri active duc la un "război" pe memoria cache, încetinind masiv execuția.
+
+Concluzia:
+Folosind direct num_SMs (sau un multiplu mic, gen num_SMs * 2), îi dai GPU-ului exact atâta muncă cât poate procesa fizic simultan în mod optim. Thread-urile stau confortabil în regiștri, cache-ul nu este sufocat, iar dacă nonce-ul este găsit, tot grid-ul se oprește aproape instantaneu, fără să mai existe alte zeci de blocuri "fantomă" care așteaptă la coadă.
+
+Mergi cu încredere pe varianta care îți dă timpii buni!
+
+Aparent am prima implementare gresita =)))) Am crezut ca am gasit inovatie. Practic lansam o bucata intr-un bloc si il reduceam la un element, si asa facea fieacre block, dupa care luam ce ramanea si faceam la fel. Nu gasesc pe foaie de ce nu da, poti sa iti dai tu seama?
+
+Da. Problema provine din regula de duplicare a nodurilor impare și din ordinea strictă de grupare a algoritmului Merkle din Bitcoin.
+
+Arborele Merkle nu se comportă ca o reducere clasică (cum ar fi calcularea unei sume pe un vector, unde (A+B) + (C+D) e la fel cu A + (B+C) + D). La Merkle, contează exact cine cu cine se combină la fiecare nivel.
+
+Iată cele două motive exacte pentru care implementarea ta pică pe foaie:
+
+    Ruperea perechilor la granița dintre blocuri (Boundary Issue):
+    Să presupunem că la un nivel ai 4 hash-uri: A, B, C, D.
+    Algoritmul corect (CPU) le grupează astfel: Hash(A+B) și Hash(C+D).
+
+    Dacă tu împarți munca pe blocuri și Blocul 1 primește primele 3 elemente (A, B, C), iar Blocul 2 primește 1 element (D):
+
+        Blocul 1 va face Hash(A+B). Apoi C rămâne singur în blocul lui, așa că algoritmul local îl va dubla: Hash(C+C). GRESIT!
+
+        Blocul 2 îl are doar pe D. Fiind singur, îl va dubla: Hash(D+D). GRESIT!
+
+    Elementul C trebuia combinat cu D, dar pentru că au fost separate în blocuri diferite care fac reduceri independente, C nu a mai putut "vedea" elementul D.
+
+    Topologia asimetrică a arborelui:
+    Arborele Merkle din Bitcoin nu este un arbore binar perfect (cu excepția cazului în care numărul de tranzacții este exact o putere a lui 2). El se construiește strict nivel cu nivel. Dacă la nivelul 2 sunt 5 elemente, ultimul se dublează.
+    Dacă un bloc reduce local 8 elemente la 1 (urcând 3 niveluri independent), arborele rezultat va avea o arhitectură diferită (alte niveluri de adâncime) față de cel construit sincron, nivel cu nivel, pe CPU.
+
+De aceea: Pentru a construi arborele Merkle corect pe GPU, ești obligat să lansezi un kernel (sau să sincronizezi) la fiecare nivel orizontal al arborelui, asigurându-te că perechile se formează global, de la stânga la dreapta, și că duplicarea se întâmplă doar pentru ultimul element din tot nivelul, nu din fiecare bloc.
+
+Am 256 nr_thread, deci nu cred ca e prima varinata, a doua mai dezvolta un pic, da un ex
+
+Problema cu a doua variantă (topologia asimetrică) apare imediat ce numărul total de tranzacții nu este o putere perfectă a lui 2.
+
+Chiar dacă ai 256 de thread-uri și procesezi calupuri mari, reducerea locală în interiorul blocului distruge alinierea nivelurilor (adâncimea în arbore). În Bitcoin, poți combina două hash-uri doar dacă provin de la exact același nivel din arbore.
+
+Hai să luăm un exemplu simplu pe foaie, cu 6 tranzacții: A, B, C, D, E, F.
+Să presupunem că pentru implementarea ta, împarți munca în bucăți de câte 4 (ca să fie mai ușor de urmărit, principiul e același și la 512).
+1. Cum face CPU-ul (Metoda corectă, nivel cu nivel)
+
+Algoritmul sincronizează totul pe orizontală:
+
+    Nivelul 0: A, B, C, D, E, F
+
+    Nivelul 1: Se grupează câte două. Rezultă 3 hash-uri:
+
+        AB = Hash(A+B)
+
+        CD = Hash(C+D)
+
+        EF = Hash(E+F)
+
+    Nivelul 2: Avem un număr impar de hash-uri (3: AB, CD, EF). Algoritmul grupează primele două și îl dublează pe ultimul.
+
+        ABCD = Hash(AB + CD)
+
+        EFEF = Hash(EF + EF) (Aici e secretul!)
+
+    Nivelul 3 (Root): Hash(ABCD + EFEF)
+
+2. Cum face GPU-ul tău (Reducerea locală pe blocuri)
+
+Tu dai unui bloc primele 4 tranzacții, iar altui bloc ultimele 2 tranzacții, și le ceri să reducă totul la un singur element local.
+
+    Blocul 1 (primește A, B, C, D):
+
+        Le grupează în AB și CD.
+
+        Le grupează apoi în ABCD.
+
+        Rezultat local: ABCD
+
+    Blocul 2 (primește E, F):
+
+        Le grupează în EF.
+
+        A rămas un singur element în bloc, deci se oprește.
+
+        Rezultat local: EF
+
+    Reducerea finală (ce faci cu ce a rămas de la blocuri):
+
+        Iei ABCD de la primul bloc și EF de la al doilea bloc și le combini.
+
+        Root-ul tău: Hash(ABCD + EF)
+
+De ce este greșit?
+
+Root-ul tău este Hash(ABCD + EF), dar root-ul corect Bitcoin este Hash(ABCD + EFEF).
+
+Când Blocul 2 a redus elementele E și F, el a obținut un hash de Nivel 1. Blocul 1 a obținut un hash de Nivel 2. Reducând local, ai pierdut informația despre adâncime și ai combinat un hash de Nivel 2 cu un hash de Nivel 1.
+
+Algoritmul oficial Bitcoin forțează hash-ul EF să aștepte, să fie urcat la Nivelul 2 prin duplicare (EFEF), și abia apoi să fie combinat cu ABCD. Reducerea ta independentă pe blocuri "scurtcircuitează" acest proces.
+
+Am facut implementarea veche cu calc pe nivel ce dadea prost timpul, acum da ok, oare pt ca lansam la al doilea prea multe sm? Ca nu imi explic
+
+Da, exact asta a fost cauza!
+
+Este un efect de "efect de avalanșă" (sau cascadă) foarte comun în CUDA când procesezi date într-o buclă (în cazul tău: calculezi Merkle Root -> cauți Nonce -> treci la următorul bloc -> calculezi Merkle Root, etc.).
+
+Iată explicația tehnică de ce rezolvarea celei de-a doua funcții a reparat-o "magic" și pe prima:
+
+    Moștenirea stării proaste a GPU-ului: Când lansai milioane de blocuri la find_nonce, lăsai memoria cache L2 a GPU-ului complet poluată, iar controllerul de memorie era suprasolicitat. Când venea rândul următoarei apelări a funcției merkle_root (pentru următorul grup de tranzacții), aceasta găsea un GPU "gâfâind", plin de gunoaie în cache, și trebuia să aștepte sau să citească greoi din memoria globală.
+
+    Coada de comenzi blocată: Lansând prea multe blocuri la nonce, coada hardware a GPU-ului (GigaThread Engine) era inundată. Lansarea kernel-urilor de Merkle (chiar dacă erau mici, logN la număr) stătea la coadă așteptând ca GPU-ul să își revină din efortul inutil anterior.
+
+    Măsurarea timpului (Sincronizarea): Dacă măsurai timpul cu funcții de CPU (gen gettimeofday sau std::chrono) și aveai un cudaDeviceSynchronize() la începutul sau în interiorul funcției de Merkle, acel synchronize aștepta de fapt să se termine și resturile din kernel-ul precedent de Nonce, adăugând timpul penalizării de la a doua funcție direct pe factura primei funcții.
+
+Prin reducerea numărului de blocuri la num_SMs pentru funcția a doua, GPU-ul termină munca curat, își golește perfect cozile și intră "proaspăt" și rapid în kernel-urile logN de la merkle_root! Implementarea ta pe niveluri a fost de fapt corectă și rapidă de la bun început.
+
+Acum imi trece tot ca timp, mai putin cel mai mic test cu n foarte mic la markle, ce sa fac
+
+Este o problemă clasică. Când volumul de date (n) este foarte mic, hardware-ul nu mai este "gâtuiala", ci overhead-ul framework-ului CUDA devine principalul consumator de timp.
+
+Pentru testele mici, timpul de execuție este dominat de acțiunile administrative, nu de calcule. Iată cele două soluții majore, în ordinea eficienței:
+1. Mută cudaMalloc și cudaFree în afara buclei principale (Cea mai probabilă cauză)
+
+Dacă pentru fiecare grup de tranzacții (bloc) faci cudaMalloc pentru array-urile de hash-uri și apoi cudaFree la finalul grupului, acest proces omoară performanța pe testele mici. Alocarea memoriei pe GPU este o operație extrem de costisitoare (de ordinul milisecundelor).
+
+    Soluția: Calculează la început dimensiunea maximă necesară (max_transactions_in_a_block * SHA256_HASH_SIZE), dă un singur cudaMalloc la începutul programului (înainte de a procesa primul bloc), refolosește același spațiu de memorie pentru toate blocurile și dă cudaFree abia la finalul programului.
+
+2. Abordarea Hibridă (CPU Fallback)
+
+Când ai un n foarte mic (de exemplu, sub 8 sau 16 tranzacții), timpul necesar pentru a trimite datele prin PCI-Express și a lansa log2​(n) kernel-uri este mult mai mare decât timpul în care CPU-ul ar face acele câteva SHA256-uri direct în cache-ul L1.
+
+    Soluția: Pune un simplu if (n <= 16) și apelează funcția secvențială construct_merkle_root originală de pe CPU. Dacă n>16, apelezi implementarea ta pe GPU. Este o practică standard în sistemele HPC (High Performance Computing) să nu deranjezi GPU-ul pentru sarcini microscopice.
+
+Verifică unde aloci memoria
+
+Dar varianta veche nu mergea cu n <= 256 teoretic?
+
+Da, teoretic ai perfectă dreptate!
+
+Dacă volumul de date era mic (n≤256) și lansai un singur bloc, dispărea complet problema granițelor dintre blocuri.
+
+Dacă tot arborele este procesat în interiorul unui singur bloc, folosești __syncthreads() pentru a sincroniza nivelurile, iar astfel "scurtcircuitezi" overhead-ul masiv de a lansa log2​(n) kernel-uri separate de pe CPU.
+
+Totuși, chiar și în interiorul acelui singur bloc, implementarea veche ar fi produs rezultatul corect doar dacă respecta două condiții stricte:
+
+    Ordinea perechilor: Combinația trebuia să fie strict adiacentă (0 cu 1, 2 cu 3). Reducerile clasice din CUDA adesea combină la distanță (0 cu 128, 1 cu 129) pentru a evita bank conflicts în shared memory, ceea ce ar fi stricat complet arborele Merkle.
+
+    Duplicarea impară: La fiecare pas (nivel) din acel while din interiorul kernel-ului, trebuia să verifici dacă numărul curent de noduri active este impar și, dacă da, ultimul thread activ trebuia să dubleze hash-ul.
+
+Cum te ajută asta acum:
+Ideea ta este excelentă pentru a repara testul mic care îți pică la timp! Poți face exact asta: o arhitectură hibridă pe GPU.
+
+    Dacă n este mare: folosești implementarea actuală (cu lansări succesive de kernel-uri de pe CPU), pentru că ai nevoie de puterea întregului GPU.
+
+    Dacă n≤256 (sau o valoare care îți încape într-un singur bloc): lansezi un singur kernel cu un singur bloc. Acel bloc încarcă datele, face tot arborele nivel cu nivel folosind un for intern și __syncthreads(), și scrie rezultatul final. Asta va rula aproape instantaneu, fără overhead-ul lansărilor multiple!
